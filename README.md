@@ -110,7 +110,6 @@ else:
 # The fun part! Sample output:
 The default prompt for the model is `ROMEO:`, of which some sample outputs are:
 ```
-warning: `VIRTUAL_ENV=/Users/rohan/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
 using device mps
 ROMEO:
 Well, call the flattering- curses: but, deny,
