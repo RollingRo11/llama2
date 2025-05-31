@@ -58,27 +58,6 @@ def apply_RoPE(x, freqs_cos, freqs_sin, position_ids):
     return output.flatten(-2)
 ```
 
-### KV Cache-ing
-```Python
-self.k_cache = None
-self.v_cache = None
-
-self.qk = torch.zeros(batch_size, max_seq_len, n_heads, self.head_dim)
-self.vk = torch.zeros(batch_size, max_seq_len, n_heads, self.head_dim)
-
-...
-
-if past_key_value is not None:
-    k_past, v_past = past_key_value
-    k = torch.cat([k_past, k], dim=2)
-    v = torch.cat([v_past, v], dim=2)
-
-if use_cache:
-    present_key_value = (k, v)
-else:
-    present_key_value = None
-```
-
 $$
 \begin{pmatrix}
 q_{m,2i} \\
@@ -102,6 +81,26 @@ $$
 f_q(x_m, m) = (x_m \odot \cos(m\theta)) + (R_d x_m \odot \sin(m\theta))
 $$
 
-where $R_d$ rotates the vector by swapping and negating the alternate dimensions, and $\odot$ denotes element-wise mult.
+
+### KV Cache-ing
+```Python
+self.k_cache = None
+self.v_cache = None
+
+self.qk = torch.zeros(batch_size, max_seq_len, n_heads, self.head_dim)
+self.vk = torch.zeros(batch_size, max_seq_len, n_heads, self.head_dim)
+
+...
+
+if past_key_value is not None:
+    k_past, v_past = past_key_value
+    k = torch.cat([k_past, k], dim=2)
+    v = torch.cat([v_past, v], dim=2)
+
+if use_cache:
+    present_key_value = (k, v)
+else:
+    present_key_value = None
+```
 
 (plus **Flash Attention** Using PyTorch's `F.scaled_dot_product_attention` for kernel computation)
