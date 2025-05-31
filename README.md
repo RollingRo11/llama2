@@ -105,3 +105,70 @@ else:
 ```
 
 (plus **Flash Attention** Using PyTorch's `F.scaled_dot_product_attention` for kernel computation)
+
+
+# The fun part! Sample output:
+The default prompt for the model is `ROMEO:`, of which some sample outputs are:
+```
+warning: `VIRTUAL_ENV=/Users/rohan/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+using device mps
+ROMEO:
+Well, call the flattering- curses: but, deny,
+And look thee from the search of dimmseyman.'
+But let their innocent alack, I'll be with Englishman.
+
+Nurse:
+I'll have this come in this while one jot
+As he that slew him; he will not find a flower.
+
+JULIET:
+Nurse?
+
+Nurse:
+Ah, well-day, I have mercy to back
+```
+
+With `SKIBIDI:` as the prompt.
+```
+(.venv) rohan@Floppy ~/D/c/llama2 (main)> uv run main.py inference
+using device mps
+SKIBIDI:
+Stay: this news so!
+
+PAULINA:
+I say, the king: I know thy lord:
+Beseech you, give me't;
+As I must go to the queen'?
+
+BENVOLIO:
+Why, what I will do not suffer it,
+Why I shall be a fellow.
+
+BAPTISTA:
+Well, this was husband.
+
+HORTENSIO:
+I'll waste my daughter Kate
+```
+
+With `ROHAN:` as the prompt:
+```
+(.venv) rohan@Floppy ~/D/c/llama2 (main)> uv run main.py inference
+using device mps
+ROHAN:
+It is a banish'd from the wager.
+
+CLIFFORD:
+Plantagenet, I find the kingdom after my sword:
+d my tongue.
+
+LADY ANNE:
+Dost thou not? will I swear to slay thyself?
+
+KING EDWARD IV:
+Seize on the act of Clarence sweeps,
+And says aught I am a subject.
+
+GLOUCESTER:
+Why,ator, my
+```
