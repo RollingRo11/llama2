@@ -58,8 +58,7 @@ def apply_RoPE(x, freqs_cos, freqs_sin, position_ids):
     return output.flatten(-2)
 ```
 
-$$
-\begin{pmatrix}
+$$\begin{pmatrix}
 q_{m,2i} \\
 q_{m,2i+1}
 \end{pmatrix}
@@ -71,8 +70,7 @@ q_{m,2i+1}
 \begin{pmatrix}
 x_{m,2i} \\
 x_{m,2i+1}
-\end{pmatrix}
-$$
+\end{pmatrix}$$
 
 where $\theta_i = 10000^{-2i/d}$ and $d$ is the dimension of the head.
 
