@@ -1,0 +1,13 @@
+[project]
+name = "llama2"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.2.6",
+    "safetensors>=0.5.3",
+    "tensorboard>=2.19.0",
+    "tiktoken>=0.9.0",
+    "torch>=2.7.0",
+]
