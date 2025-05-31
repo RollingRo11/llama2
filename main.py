@@ -7,9 +7,7 @@ from safetensors.torch import save_file, load_file
 import os
 import time
 
-torch.set_float32_matmul_precision("high")
-
-# Device setup
+torch.set_float32_matmul_precision("high")  # for gpu perf
 device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 writer = SummaryWriter()
 
@@ -58,20 +56,17 @@ def generate(model, tokenizer, max_tokens=100, temperature=1.0):
     past_key_values = None
     with torch.no_grad():
         for _ in range(max_tokens):
-            # Use KV cache during generation
             logits, past_key_values = model(x, past_key_values=past_key_values, use_cache=True)
             logits = logits[:, -1, :] / temperature
             probs = torch.softmax(logits, dim=-1)
             next_token = torch.multinomial(probs, num_samples=1)
             generated.append(next_token.item())
-            # Only use the new token for next forward pass when using KV cache
             x = next_token
 
     return prompt + tokenizer.decode(generated)
 
 
 def main():
-    # Load and tokenize data
     enc = tiktoken.get_encoding("gpt2")
     with open("input.txt", "r", encoding="utf-8") as f:
         text = f.read()
@@ -83,16 +78,20 @@ def main():
     test_size = len(dataset) - train_size - val_size
     train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
 
-    # Create dataloaders
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE)
     test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
 
-    # Create model
+    # model
     model = LlamaTransformer(
-        vocab_size=VOCAB_SIZE, embd_size=512, num_layers=6, n_heads=8, ff_dim=2048, max_len=CONTEXT_LEN, batch_size=BATCH_SIZE
+        vocab_size=VOCAB_SIZE,
+        embd_size=512,
+        num_layers=6,
+        n_heads=8,
+        ff_dim=2048,
+        max_len=CONTEXT_LEN,
+        batch_size=BATCH_SIZE,
     ).to(device)
-    # Disable compile for now as it causes issues with KV caching
     # model = torch.compile(model)
 
     if len(os.sys.argv) > 1 and os.sys.argv[1] == "inference":  # type: ignore
@@ -125,7 +124,6 @@ def main():
 
             t1 = time.time()
             dt = (t1 - t0) * 1000
-            # Log and evaluate
             writer.add_scalar("train_loss", loss.item(), step)
             writer.add_scalar("time taken", dt, step)
             if step % EVAL_INTERVAL == 0:
@@ -133,7 +131,6 @@ def main():
                 writer.add_scalar("val_loss", val_loss, step)
                 print(f"Epoch {epoch}, Step {step}: train_loss={loss.item():.4f}, val_loss={val_loss:.4f}")
 
-                # Save best model
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
                     model_state = {k: v.cpu() for k, v in model.state_dict().items()}
@@ -141,7 +138,6 @@ def main():
 
             step += 1
 
-    # Final test
     test_loss = evaluate(model, test_loader)
     print(f"Test loss: {test_loss:.4f}")
     writer.close()

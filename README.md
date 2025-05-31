@@ -4,45 +4,42 @@
 Read the paper [here!](https://arxiv.org/abs/2307.09288)
 
 ## Paper implementation overview
-My implementation of LLaMA 2 is done in a combination of NumPy and PyTorch. I've implemented key LLaMA-specific components from scratch while leveraging PyTorch for standard operations (Linear layers, embeddings, etc.)
+This implementation of the llama 2 architecture is done in a combination of both NumPy and PyTorch.
+(I've implemented llama-specific code from scratch in NumPy, and the rest in PyTorch, for readability).
 
-The custom implementation includes several key components:
+The custom implementation includes:
 
-- **RoPE (Rotary Position Embedding)**: Custom implementation of rotary positional embeddings for better handling of positional information
-- **Multi-Head Self-Attention with KV Caching**: Efficient attention mechanism with key-value caching for faster inference
-- **RMSNorm**: Root Mean Square Layer Normalization as used in LLaMA (instead of standard LayerNorm)
-- **SiLU/Swish Activation**: Using SiLU activation function in the feed-forward networks
-- **Flash Attention**: Leveraging PyTorch's `F.scaled_dot_product_attention` for memory-efficient attention computation
+- **RoPE (Rotary Position Embedding)**:
+```Python
+def init_rotary_embd(self, device):
+    if self.freqs_cos is None or self.freqs_sin is None:
+        freqs_cos, freqs_sin = precompute_freqs_cis(self.n_heads, self.max_seq_len)
+        self.register_buffer("freqs_cos", freqs_cos)
+        self.register_buffer("freqs_sin", freqs_sin)
 
-You can view the implementation of each component in `layers.py` ([here](layers.py))
+    self.freqs_cos = self.freqs_cos.to(device)
+    self.freqs_sin = self.freqs_sin.to(device)
+```
 
-### Key Architecture Features
+- **KV Cache-ing**:
+```Python
+self.k_cache = None
+self.v_cache = None
 
-**Attention Mechanism:**
-- Custom `SelfAttn` module implementing multi-head self-attention with RoPE
-- KV caching support for efficient autoregressive generation
-- Causal masking for proper language modeling
+self.qk = torch.zeros(batch_size, max_seq_len, n_heads, self.head_dim)
+self.vk = torch.zeros(batch_size, max_seq_len, n_heads, self.head_dim)
 
-**Feed-Forward Network:**
-- `FeedForward` module with SiLU activation
-- Standard up-projection and down-projection pattern
+...
 
-**Layer Structure:**
-- `MultiHeadAttn` combines attention and feed-forward with RMSNorm
-- Residual connections following the transformer architecture
-- Pre-normalization pattern as used in modern transformers
+if past_key_value is not None:
+    k_past, v_past = past_key_value
+    k = torch.cat([k_past, k], dim=2)
+    v = torch.cat([v_past, v], dim=2)
 
-### Training Features
-- **Gradient Clipping**: Implemented to stabilize training
-- **AdamW Optimizer**: With LLaMA-specific hyperparameters (betas=(0.9, 0.95))
-- **Learning Rate**: 3e-4 as commonly used for transformer training
-- **Safetensors**: Model checkpointing using safetensors format for security
-- **TensorBoard**: Integrated logging for training metrics
-- **Mixed Precision**: Float32 matmul precision optimization
+if use_cache:
+    present_key_value = (k, v)
+else:
+    present_key_value = None
+```
 
-### Data Processing
-- **Tokenization**: Using tiktoken with GPT-2 encoding
-- **Context Length**: Configurable context window (default 256 tokens)
-- **Batched Training**: Efficient batched processing with DataLoader
-
-The model supports both training and inference modes, with efficient KV caching during generation for faster autoregressive sampling.
+- **Flash Attention**: Using PyTorch's `F.scaled_dot_product_attention` for kernel computation.

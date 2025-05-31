@@ -29,26 +29,20 @@ class LlamaTransformer(nn.Module):
 
     def forward(self, x, past_key_values=None, use_cache=False):
         batch_size, seq_len = x.shape
-        
-        # Initialize past_key_values if None but use_cache is True
+
         if past_key_values is None:
             past_key_values = [None] * len(self.layers)
-        
-        # Create causal mask based on the current input length
+
         if past_key_values[0] is not None:
-            # If using past_key_values, the input contains only the new token(s)
-            # Calculate total sequence length (cached + current)
             kv_seq_len = past_key_values[0][0].size(2) + seq_len
             mask = torch.tril(torch.ones((kv_seq_len, kv_seq_len))).unsqueeze(0).unsqueeze(0)
-            # Select the appropriate part of the mask
             mask = mask[:, :, -seq_len:, :].to(x.device)
         else:
-            # Normal full attention mask if not using cache
             mask = torch.tril(torch.ones((seq_len, seq_len))).unsqueeze(0).unsqueeze(0)
             mask = mask.to(x.device)
 
         x = self.token_embd(x)
-        
+
         present_key_values = []
         for i, layer in enumerate(self.layers):
             if use_cache:
@@ -56,10 +50,10 @@ class LlamaTransformer(nn.Module):
                 present_key_values.append(present_kv)
             else:
                 x = layer(x, mask)
-        
+
         x = self.rmsnorm(x)
         x = self.fc_out(x)
-        
+
         if use_cache:
             return x, present_key_values
         return x

@@ -52,20 +52,19 @@ class SelfAttn(nn.Module):
 
         position_offset = 0
         if past_key_value is not None:
-            # If using past key values, adjust the position offset
             position_offset = past_key_value[0].size(2)  # Size of cached sequence
 
-        position_ids = torch.arange(position_offset, position_offset + seq_len, device=device).unsqueeze(0).expand(batch_size, -1)
-        # Ensure position_ids are within the bounds of precomputed frequencies
+        position_ids = (
+            torch.arange(position_offset, position_offset + seq_len, device=device)
+            .unsqueeze(0)
+            .expand(batch_size, -1)
+        )
         position_ids = torch.clamp(position_ids, max=self.max_seq_len - 1)
 
-        # shape (batch size, seq_len, n_embd)
         q = self.query(x)
         k = self.key(x)
         v = self.value(x)
 
-        # split into "self.n_heads" pieces
-        # shape (batch_size, seq_len, n_heads, head_dim)
         q = q.reshape(batch_size, seq_len, self.n_heads, self.head_dim)
         k = k.reshape(batch_size, seq_len, self.n_heads, self.head_dim)
         v = v.reshape(batch_size, seq_len, self.n_heads, self.head_dim)
@@ -78,14 +77,11 @@ class SelfAttn(nn.Module):
         q = apply_RoPE(q, self.freqs_cos, self.freqs_sin, position_ids)
         k = apply_RoPE(k, self.freqs_cos, self.freqs_sin, position_ids)
 
-        # Use cached KV if available
         if past_key_value is not None:
-            # Concatenate past keys and values with current
             k_past, v_past = past_key_value
             k = torch.cat([k_past, k], dim=2)
             v = torch.cat([v_past, v], dim=2)
 
-        # Save current KV for next iteration if using cache
         if use_cache:
             present_key_value = (k, v)
         else:
@@ -98,7 +94,7 @@ class SelfAttn(nn.Module):
         out = out.reshape(batch_size, seq_len, self.n_embd)
 
         out = self.fc_out(out)
-        
+
         if use_cache:
             return out, present_key_value
         return out
@@ -128,13 +124,13 @@ class MultiHeadAttn(nn.Module):
 
     def forward(self, x, mask, use_cache=False, past_key_value=None):
         x = self.n1(x)
-        
+
         if use_cache:
             attn, present_key_value = self.attention(x, mask, use_cache=True, past_key_value=past_key_value)
         else:
             attn = self.attention(x, mask)
             present_key_value = None
-            
+
         x = self.n2(attn + x)
         forw = self.feed(x)
 

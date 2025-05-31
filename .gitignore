@@ -4,3 +4,5 @@
 /past_models
 /runs
 model.safetensors
+uv.lock
+.DS_Store
