@@ -139,10 +139,8 @@ class MultiHeadAttn(nn.Module):
         return forw
 
 
-## RoPE helper methods:
 def precompute_freqs_cis(dim, end, theta=10000.0):
-    # precompute the frequency tensor
-    device = torch.device("cpu")  # Default to CPU, will be moved to the right device later
+    device = torch.device("cpu")
     freqs = 1.0 / (theta ** torch.arange(0, dim, 2, device=device)[: (dim // 2)].float() / dim)
     t = torch.arange(end, device=device)
     freqs = torch.outer(t, freqs)
@@ -159,7 +157,6 @@ def reshape_for_rotation(x):
 
 
 def apply_RoPE(x, freqs_cos, freqs_sin, position_ids):
-    # Ensure position_ids are within bounds
     max_pos = freqs_cos.size(0) - 1
     position_ids = torch.clamp(position_ids, max=max_pos)
 
@@ -169,7 +166,6 @@ def apply_RoPE(x, freqs_cos, freqs_sin, position_ids):
     x_reshaped = reshape_for_rotation(x)
     x1, x2 = x_reshaped[..., 0], x_reshaped[..., 1]
 
-    # Handle dimension mismatch - expand cos and sin if needed
     if x1.size(-1) > cos.size(-1):
         repeat_factor = x1.size(-1) // cos.size(-1)
         cos = torch.repeat_interleave(cos, repeat_factor, dim=-1)
