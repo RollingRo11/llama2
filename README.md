@@ -3,6 +3,17 @@
 
 Read the paper [here!](https://arxiv.org/abs/2307.09288)
 
+## Instructions to run/use:
+(Probably have a gpu. Trained for about 30 mins on an h100).
+
+Make sure to have PyTorch, Tensorboard (for tracking), and safetensors installed.
+
+`python main.py` or `uv run main.py` to train.
+
+After training, `model.safetensors` should be in the directory.
+
+`python main.py inference` or `uv run main.py inference` to sample output!
+
 ## Paper implementation overview
 
 ### RoPE (Rotary Positional Embedding)
