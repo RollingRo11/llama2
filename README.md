@@ -58,12 +58,29 @@ def apply_RoPE(x, freqs_cos, freqs_sin, position_ids):
     return output.flatten(-2)
 ```
 
-$$\begin{pmatrix} q_{m,2i} \\ q_{m,2i+1}  \end{pmatrix} = \begin{pmatrix} \cos(m\theta_i) & -\sin(m\theta_i) \\ \sin(m\theta_i) & \cos(m\theta_i) \end{pmatrix} \begin{pmatrix} x_{m,2i} \\ x_{m,2i+1} \end{pmatrix}$$
+```math
+\begin{pmatrix}
+q_{m,2i} \\
+q_{m,2i+1}
+\end{pmatrix}
+=
+\begin{pmatrix}
+\cos(m\theta_i) & -\sin(m\theta_i) \\
+\sin(m\theta_i) & \cos(m\theta_i)
+\end{pmatrix}
+\begin{pmatrix}
+x_{m,2i} \\
+x_{m,2i+1}
+\end{pmatrix}
+```
 
 where $\theta_i = 10000^{-2i/d}$ and $d$ is the dimension of the head.
 
-This can be written more compactly as:
-$$f_q(x_m, m) = (x_m \odot \cos(m\theta)) + (R_d x_m \odot \sin(m\theta))$$
+```math
+f_q(x_m, m) = (x_m \odot \cos(m\theta)) + (R_d x_m \odot \sin(m\theta))
+```
+
+where $R_d$ rotates the vector by swapping and negating the alternate dimensions, and $\odot$ denotes element-wise mult.
 
 
 ### KV Cache-ing
