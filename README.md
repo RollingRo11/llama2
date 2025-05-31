@@ -110,6 +110,7 @@ else:
 # The fun part! Sample output:
 The default prompt for the model is `ROMEO:`, of which some sample outputs are:
 ```
+(.venv) rohan@Floppy ~/D/c/llama2 (main)> uv run main.py inference
 using device mps
 ROMEO:
 Well, call the flattering- curses: but, deny,
