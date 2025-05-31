@@ -4,10 +4,6 @@
 Read the paper [here!](https://arxiv.org/abs/2307.09288)
 
 ## Paper implementation overview
-This implementation of the llama 2 architecture is done in a combination of both NumPy and PyTorch.
-(I've implemented llama-specific code from scratch in NumPy, and the rest in PyTorch, for readability).
-
-## Some key aspects of the implementation:
 
 ### RoPE (Rotary Positional Embedding)
 ```Python
